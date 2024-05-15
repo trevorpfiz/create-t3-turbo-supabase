@@ -1,14 +1,13 @@
 import type { ReactNode } from "react";
-import { Button, Text, TouchableOpacity } from "react-native";
-import { useRouter } from "expo-router";
+import { Text, TouchableOpacity } from "react-native";
+import { Link, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 
 export function AuthAvatar() {
   // const user = useUser();
-  const router = useRouter();
   // const profileImage = user?.user_metadata.avatar_url as string | undefined;
 
-  return <Button title="Sign In" onPress={() => router.push("/profile")} />;
+  return <Link href="/profile">Sign In</Link>;
 
   /**
    * FIXME: Something is wrong when rendering anything but a Button here...

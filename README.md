@@ -47,52 +47,52 @@ pnpm db:migrate
 5. Under `Auth` -> `URL Configuration`, set the `Site URL` to your production URL and add `http://localhost:3000/**` and `https://*-username.vercel.app/**` to `Redirect URLs` as detailed here <https://supabase.com/docs/guides/auth/redirect-urls#vercel-preview-urls>.
 6. Setup a trigger when a new user signs up: <https://supabase.com/docs/guides/auth/managing-user-data#using-triggers>. Can run this in the SQL Editor.
 
-```sql
--- inserts a row into public.profile
-create function public.handle_new_user()
-returns trigger
-language plpgsql
-security definer set search_path = public
-as $$
-begin
-  insert into public.t3turbo_profile (id, email, name, image)
-  values (
-    new.id,
-    new.email,
-    COALESCE(
-      new.raw_user_meta_data ->> 'name',
-      new.raw_user_meta_data ->> 'full_name',
-      new.raw_user_meta_data ->> 'user_name',
-      '[redacted]'
-    ),
-    new.raw_user_meta_data ->> 'avatar_url'
-  )
-  on conflict (id) do update set
-    email = excluded.email,
-    name = excluded.name,
-    image = excluded.image;
-  return new;
-end;
-$$;
+   ```sql
+   -- inserts a row into public.profile
+   create function public.handle_new_user()
+   returns trigger
+   language plpgsql
+   security definer set search_path = public
+   as $$
+   begin
+     insert into public.t3turbo_profile (id, email, name, image)
+     values (
+       new.id,
+       new.email,
+       COALESCE(
+         new.raw_user_meta_data ->> 'name',
+         new.raw_user_meta_data ->> 'full_name',
+         new.raw_user_meta_data ->> 'user_name',
+         '[redacted]'
+       ),
+       new.raw_user_meta_data ->> 'avatar_url'
+     )
+     on conflict (id) do update set
+       email = excluded.email,
+       name = excluded.name,
+       image = excluded.image;
+     return new;
+   end;
+   $$;
 
--- trigger the function every time a user is created
-create trigger on_auth_user_created
-  after insert on auth.users
-  for each row execute procedure public.handle_new_user();
+   -- trigger the function every time a user is created
+   create trigger on_auth_user_created
+     after insert on auth.users
+     for each row execute procedure public.handle_new_user();
 
--- trigger the function when a user signs in/their email is confirmed to get missing values
-create trigger on_auth_user_verified
-  after update on auth.users
-  for each row when (
-    old.last_sign_in_at is null
-    and new.last_sign_in_at is not null
-  ) execute procedure public.handle_new_user();
-```
+   -- trigger the function when a user signs in/their email is confirmed to get missing values if any
+   create trigger on_auth_user_verified
+     after update on auth.users
+     for each row when (
+       old.last_sign_in_at is null
+       and new.last_sign_in_at is not null
+     ) execute procedure public.handle_new_user();
+   ```
 
-```sql
--- drop a trigger if needed
-drop trigger "on_auth_user_verified" on auth.users;
-```
+   ```sql
+   -- drop a trigger if needed
+   drop trigger "on_auth_user_verified" on auth.users;
+   ```
 
 7. Remove access to the `public` schema as we are only using the server
 
@@ -111,13 +111,14 @@ REVOKE USAGE ON SCHEMA public FROM anon, authenticated;
 #### Use iOS Simulator
 
 1. Make sure you have XCode and XCommand Line Tools installed [as shown on expo docs](https://docs.expo.dev/workflow/ios-simulator/).
+
    > **NOTE:** If you just installed XCode, or if you have updated it, you need to open the simulator manually once. Run `npx expo start` in the root dir, and then enter `I` to launch Expo Go. After the manual launch, you can run `pnpm dev` in the root directory.
 
-```diff
-+  "dev": "expo start --ios",
-```
+   ```diff
+   +  "dev": "expo start --ios",
+   ```
 
-3. Run `pnpm dev` at the project root folder.
+2. Run `pnpm dev` at the project root folder.
 
 > **TIP:** It might be easier to run each app in separate terminal windows so you get the logs from each app separately. This is also required if you want your terminals to be interactive, e.g. to access the Expo QR code. You can run `pnpm --filter expo dev` and `pnpm --filter nextjs dev` to run each app in a separate terminal window.
 
@@ -126,11 +127,24 @@ REVOKE USAGE ON SCHEMA public FROM anon, authenticated;
 1. Install Android Studio tools [as shown on expo docs](https://docs.expo.dev/workflow/android-studio-emulator/).
 2. Change the `dev` script at `apps/expo/package.json` to open the Android emulator.
 
-```diff
-+  "dev": "expo start --android",
-```
+   ```diff
+   +  "dev": "expo start --android",
+   ```
 
 3. Run `pnpm dev` at the project root folder.
+
+### Keyboard Avoiding in React Native
+
+Choose one of these (Requires [Development Builds](https://docs.expo.dev/develop/development-builds/introduction/)):
+
+1. [react-native-keyboard-controller](https://github.com/kirillzyusko/react-native-keyboard-controller)
+2. [react-native-avoid-softinput](https://github.com/mateusz1913/react-native-avoid-softinput)
+
+If you need an Expo Go option:
+
+1. [react-native-keyboard-aware-scroll-view](https://github.com/APSL/react-native-keyboard-aware-scroll-view)
+
+> **NOTE:** I would not be worried about using development builds. It is the standard way to develop Expo apps. You create a development build once with the native packages installed, and then you get all the benefits of hot reloading etc.
 
 ## References
 
