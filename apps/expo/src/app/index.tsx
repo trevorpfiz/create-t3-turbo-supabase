@@ -12,11 +12,10 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Image } from "expo-image";
-import { Link, Stack } from "expo-router";
+import { Link } from "expo-router";
 import { FlashList } from "@shopify/flash-list";
 
 import type { RouterOutputs } from "~/utils/api";
-import { AuthAvatar } from "~/components/header";
 import { api } from "~/utils/api";
 
 function PostCard(props: { post: RouterOutputs["post"]["all"][number] }) {
@@ -137,18 +136,6 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView className="bg-background">
-      <Stack.Screen
-        options={{
-          headerLeft: () => <AuthAvatar />,
-          headerTitle: () => (
-            <Text className="text-3xl font-bold text-zinc-200">
-              <Text className="text-fuchsia-500">T3</Text>
-              <Text> x </Text>
-              <Text className="text-emerald-400">Supabase</Text>
-            </Text>
-          ),
-        }}
-      />
       <View className="h-full w-full bg-background p-4">
         <Pressable
           className="my-4 rounded bg-emerald-400 p-2"

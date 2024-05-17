@@ -1,15 +1,21 @@
 import { useState } from "react";
 import { Alert, Pressable, Text, TextInput, View } from "react-native";
 import * as AppleAuthentication from "expo-apple-authentication";
+import { Link, router } from "expo-router";
 import { AntDesign } from "@expo/vector-icons";
 import { useSupabaseClient, useUser } from "@supabase/auth-helpers-react";
 
 import { initiateAppleSignIn } from "~/utils/auth";
 
 export default function Profile() {
+  // If the page was reloaded or navigated to directly, then the modal should be presented as
+  // a full screen page. You may need to change the UI to account for this.
+  const isPresented = router.canGoBack();
+
   const user = useUser();
   return (
-    <View className="flex-1 bg-zinc-800 p-4">
+    <View className="flex-1 p-4">
+      {!isPresented && <Link href="../">Dismiss</Link>}
       {user ? <SignedInView /> : <SignedOutView />}
     </View>
   );
